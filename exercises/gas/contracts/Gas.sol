@@ -5,21 +5,21 @@ import "./Ownable.sol";
 
 contract Constants {
     uint256 public tradeFlag = 1;
-    uint256 public basicFlag = 0;
+    uint256 public basicFlag;
     uint256 public dividendFlag = 1;
 }
 
 contract GasContract is Ownable, Constants {
-    uint256 public totalSupply = 0; // cannot be updated
-    uint256 public paymentCounter = 0;
+    uint256 public immutable totalSupply; // cannot be updated
+    uint256 public paymentCounter;
     mapping(address => uint256) public balances;
     uint256 public tradePercent = 12;
     address public contractOwner;
-    uint256 public tradeMode = 0;
+    uint256 public tradeMode;
     mapping(address => Payment[]) public payments;
     mapping(address => uint256) public whitelist;
     address[5] public administrators;
-    bool public isReady = false;
+    bool public isReady;
     enum PaymentType {
         Unknown,
         BasicPayment,
@@ -106,8 +106,9 @@ contract GasContract is Ownable, Constants {
     constructor(address[] memory _admins, uint256 _totalSupply) {
         contractOwner = msg.sender;
         totalSupply = _totalSupply;
-
-        for (uint256 ii = 0; ii < administrators.length; ii++) {
+        
+        uint256 len = administrators.length;
+        for (uint256 ii = 0; ii < len; ii++) {
             if (_admins[ii] != address(0)) {
                 administrators[ii] = _admins[ii];
                 if (_admins[ii] == contractOwner) {
@@ -224,12 +225,17 @@ contract GasContract is Ownable, Constants {
         uint256 _amount,
         PaymentType _type
     ) public onlyAdminOrOwner {
+
+        // IDG = Gas Contract - Update Payment function - ID must be greater than 0
+        // ADG = Gas Contract - Update Payment function - Amount must be greater than 0
+        // ANZ = Gas Contract - Update Payment function - Administrator must have a valid non zero address
+
         require(
-            _ID > 0,
+            _ID != 0,
             "Gas Contract - Update Payment function - ID must be greater than 0"
         );
         require(
-            _amount > 0,
+            _amount != 0,
             "Gas Contract - Update Payment function - Amount must be greater than 0"
         );
         require(
