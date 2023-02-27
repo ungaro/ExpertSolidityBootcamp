@@ -9,32 +9,30 @@ import "./Ownable.sol";
 // GC3           "Gas Contract CheckIfWhiteListed modifier : revert happened because the originator of the transaction was not the sender"
 // GC4           "Gas Contract CheckIfWhiteListed modifier : revert happened because the user is not whitelisted"
 // GC5           "Gas Contract CheckIfWhiteListed modifier : revert happened because the user's tier is incorrect, it cannot be over 4 as the only tier we have are: 1, 2, 3; therfore 4 is an invalid tier for the whitlist of this contract. make sure whitlist tiers were set correctly"
-// GC6           "Gas Contract - getPayments function - User must have a valid non zero address"
-// GC7           "Gas Contract - Transfer function - Sender has insufficient Balance"
-// GC8           "Gas Contract - Transfer function -  The recipient name is too long, there is a max length of 8 characters"
+// GC6           "Gas Contract - getPayments_xvs function - User must have a valid non zero address"
+// GC7           "Gas Contract - transfer_sEg function - Sender has insufficient Balance"
+// GC8           "Gas Contract - transfer_sEg function -  The recipient name is too long, there is a max length of 8 characters"
 // GC9           "Gas Contract - Update Payment function - ID must be greater than 0"
 // GC10          "Gas Contract - Update Payment function - Amount must be greater than 0"
 // GC11          "Gas Contract - Update Payment function - Administrator must have a valid non zero address"
 // GC12          "Gas Contract - addToWhitelist function -  tier level should not be greater than 255"
-// GC13          "Gas Contract - whiteTransfers function - Sender has insufficient Balance"
-// GC14          "Gas Contract - whiteTransfers function - amount to send have to be bigger than 3"
+// GC13          "Gas Contract - whitetransfer_sEgs function - Sender has insufficient Balance"
+// GC14          "Gas Contract - whitetransfer_sEgs function - amount to send have to be bigger than 3"
 
 
 
 
-contract Constants {
-    uint256 public tradeFlag = 1;
-    uint256 public basicFlag;
-    uint256 public dividendFlag = 1;
-}
-
-contract GasContract is Ownable, Constants {
+contract GasContract is Ownable {
+    // trade, basic, dividend flag
+    // 101
+    bytes4 flags = "0x0101";
     uint256 public immutable totalSupply; // cannot be updated
     uint256 public paymentCounter;
     mapping(address => uint256) public balances;
-    uint256 public tradePercent = 12;
+    uint8 public tradePercent = 12;
     address public contractOwner;
     uint256 public tradeMode;
+    
     mapping(address => Payment[]) public payments;
     mapping(address => uint256) public whitelist;
     address[5] public administrators;
@@ -68,9 +66,9 @@ contract GasContract is Ownable, Constants {
     uint256 wasLastOdd = 1;
     mapping(address => uint256) public isOddWhitelistUser;
     struct ImportantStruct {
-        uint256 valueA; // max 3 digits
-        uint256 bigValue;
-        uint256 valueB; // max 3 digits
+        uint16 valueA; // max 3 digits
+        bytes32 bigValue;
+        uint16 valueB; // max 3 digits
     }
 
     mapping(address => ImportantStruct) public whiteListStruct;
@@ -79,9 +77,9 @@ contract GasContract is Ownable, Constants {
 
     modifier onlyAdminOrOwner() {
         address senderOfTx = msg.sender;
-        if (checkForAdmin(senderOfTx)) {
+        if (checkForAdmin_ChO(senderOfTx)) {
             require(
-                checkForAdmin(senderOfTx),
+                checkForAdmin_ChO(senderOfTx),
                 "GC1"
             );
             _;
@@ -113,20 +111,20 @@ contract GasContract is Ownable, Constants {
     }
 
     event supplyChanged(address indexed, uint256 indexed);
-    event Transfer(address recipient, uint256 amount);
+    event transfer_sEg(address recipient, uint256 amount);
     event PaymentUpdated(
         address admin,
         uint256 ID,
         uint256 amount,
         string recipient
     );
-    event WhiteListTransfer(address indexed);
+    event WhiteListtransfer_sEg(address indexed);
 
     constructor(address[] memory _admins, uint256 _totalSupply) {
         contractOwner = msg.sender;
         totalSupply = _totalSupply;
         
-        uint256 len = administrators.length;
+        uint8 len = administrators.length;
         for (uint256 ii = 0; ii < len; ii++) {
             if (_admins[ii] != address(0)) {
                 administrators[ii] = _admins[ii];
@@ -144,7 +142,15 @@ contract GasContract is Ownable, Constants {
         }
     }
 
-    function getPaymentHistory()
+
+    function balanceOf(address _user) public view returns (uint256 balance_) {
+        uint256 balance = balances[_user];
+        return balance;
+    }
+
+
+
+    function getPaymentHistory_wqU()
         public
         payable
         returns (History[] memory paymentHistory_)
@@ -152,9 +158,10 @@ contract GasContract is Ownable, Constants {
         return paymentHistory;
     }
 
-    function checkForAdmin(address _user) public view returns (bool admin_) {
+    function checkForAdmin_ChO(address _user) public view returns (bool admin_) {
         bool admin = false;
-        for (uint256 ii = 0; ii < administrators.length; ii++) {
+        uint8 len = administrators.length;
+        for (uint256 ii = 0; ii < len; ii++) {
             if (administrators[ii] == _user) {
                 admin = true;
             }
@@ -162,14 +169,9 @@ contract GasContract is Ownable, Constants {
         return admin;
     }
 
-    function balanceOf(address _user) public view returns (uint256 balance_) {
-        uint256 balance = balances[_user];
-        return balance;
-    }
-
-    function getTradingMode() public view returns (bool mode_) {
+    function getTradingMode_GIW() public view returns (bool mode_) {
         bool mode = false;
-        if (tradeFlag == 1 || dividendFlag == 1) {
+        if (flags = "0x0101") {
             mode = true;
         } else {
             mode = false;
@@ -177,7 +179,7 @@ contract GasContract is Ownable, Constants {
         return mode;
     }
 
-    function addHistory(address _updateAddress, bool _tradeMode)
+    function addHistory_KeQ(address _updateAddress, bool _tradeMode)
         public
         returns (bool status_, bool tradeMode_)
     {
@@ -193,7 +195,7 @@ contract GasContract is Ownable, Constants {
         return ((status[0] == true), _tradeMode);
     }
 
-    function getPayments(address _user)
+    function getPayments_xvs(address _user)
         public
         view
         returns (Payment[] memory payments_)
@@ -205,7 +207,7 @@ contract GasContract is Ownable, Constants {
         return payments[_user];
     }
 
-    function transfer(
+    function transfer_sEg(
         address _recipient,
         uint256 _amount,
         string calldata _name
@@ -221,7 +223,7 @@ contract GasContract is Ownable, Constants {
         );
         balances[senderOfTx] -= _amount;
         balances[_recipient] += _amount;
-        emit Transfer(_recipient, _amount);
+        emit transfer_sEg(_recipient, _amount);
         Payment memory payment;
         payment.admin = address(0);
         payment.adminUpdated = false;
@@ -238,7 +240,7 @@ contract GasContract is Ownable, Constants {
         return (status[0] == true);
     }
 
-    function updatePayment(
+    function updatePayment_0Me(
         address _user,
         uint256 _ID,
         uint256 _amount,
@@ -266,8 +268,8 @@ contract GasContract is Ownable, Constants {
                 payments[_user][ii].admin = _user;
                 payments[_user][ii].paymentType = _type;
                 payments[_user][ii].amount = _amount;
-                bool tradingMode = getTradingMode();
-                addHistory(_user, tradingMode);
+                bool tradingMode = getTradingMode_GIW();
+                addHistory_KeQ(_user, tradingMode);
                 emit PaymentUpdated(
                     senderOfTx,
                     _ID,
@@ -278,7 +280,7 @@ contract GasContract is Ownable, Constants {
         }
     }
 
-    function addToWhitelist(address _userAddrs, uint256 _tier)
+    function addToWhitelist_ohF(address _userAddrs, uint256 _tier)
         public
         onlyAdminOrOwner
     {
@@ -310,7 +312,7 @@ contract GasContract is Ownable, Constants {
         emit AddedToWhitelist(_userAddrs, _tier);
     }
 
-    function whiteTransfer(
+    function whitetransfer_sEg_Vgq(
         address _recipient,
         uint256 _amount,
         ImportantStruct memory _struct
@@ -336,6 +338,6 @@ contract GasContract is Ownable, Constants {
         newImportantStruct.valueA = _struct.valueA;
         newImportantStruct.bigValue = _struct.bigValue;
         newImportantStruct.valueB = _struct.valueB;
-        emit WhiteListTransfer(_recipient);
+        emit WhiteListtransfer_sEg(_recipient);
     }
 }
