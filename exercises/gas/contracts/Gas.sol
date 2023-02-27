@@ -3,6 +3,25 @@ pragma solidity 0.8.0;
 
 import "./Ownable.sol";
 
+// ERRORS:
+// GC1           "Gas Contract Only Admin Check-  Caller not admin"
+// GC2           "Error in Gas contract - onlyAdminOrOwner modifier : revert happened because the originator of the transaction was not the admin, and furthermore he wasn't the owner of the contract, so he cannot run this function"
+// GC3           "Gas Contract CheckIfWhiteListed modifier : revert happened because the originator of the transaction was not the sender"
+// GC4           "Gas Contract CheckIfWhiteListed modifier : revert happened because the user is not whitelisted"
+// GC5           "Gas Contract CheckIfWhiteListed modifier : revert happened because the user's tier is incorrect, it cannot be over 4 as the only tier we have are: 1, 2, 3; therfore 4 is an invalid tier for the whitlist of this contract. make sure whitlist tiers were set correctly"
+// GC6           "Gas Contract - getPayments function - User must have a valid non zero address"
+// GC7           "Gas Contract - Transfer function - Sender has insufficient Balance"
+// GC8           "Gas Contract - Transfer function -  The recipient name is too long, there is a max length of 8 characters"
+// GC9           "Gas Contract - Update Payment function - ID must be greater than 0"
+// GC10          "Gas Contract - Update Payment function - Amount must be greater than 0"
+// GC11          "Gas Contract - Update Payment function - Administrator must have a valid non zero address"
+// GC12          "Gas Contract - addToWhitelist function -  tier level should not be greater than 255"
+// GC13          "Gas Contract - whiteTransfers function - Sender has insufficient Balance"
+// GC14          "Gas Contract - whiteTransfers function - amount to send have to be bigger than 3"
+
+
+
+
 contract Constants {
     uint256 public tradeFlag = 1;
     uint256 public basicFlag;
@@ -63,14 +82,14 @@ contract GasContract is Ownable, Constants {
         if (checkForAdmin(senderOfTx)) {
             require(
                 checkForAdmin(senderOfTx),
-                "Gas Contract Only Admin Check-  Caller not admin"
+                "GC1"
             );
             _;
         } else if (senderOfTx == contractOwner) {
             _;
         } else {
             revert(
-                "Error in Gas contract - onlyAdminOrOwner modifier : revert happened because the originator of the transaction was not the admin, and furthermore he wasn't the owner of the contract, so he cannot run this function"
+                "GC2"
             );
         }
     }
@@ -79,16 +98,16 @@ contract GasContract is Ownable, Constants {
         address senderOfTx = msg.sender;
         require(
             senderOfTx == sender,
-            "Gas Contract CheckIfWhiteListed modifier : revert happened because the originator of the transaction was not the sender"
+            "GC3"
         );
         uint256 usersTier = whitelist[senderOfTx];
         require(
             usersTier > 0,
-            "Gas Contract CheckIfWhiteListed modifier : revert happened because the user is not whitelisted"
+            "GC4"
         );
         require(
             usersTier < 4,
-            "Gas Contract CheckIfWhiteListed modifier : revert happened because the user's tier is incorrect, it cannot be over 4 as the only tier we have are: 1, 2, 3; therfore 4 is an invalid tier for the whitlist of this contract. make sure whitlist tiers were set correctly"
+            "GC5"
         );
         _;
     }
@@ -181,7 +200,7 @@ contract GasContract is Ownable, Constants {
     {
         require(
             _user != address(0),
-            "Gas Contract - getPayments function - User must have a valid non zero address"
+            "GC6"
         );
         return payments[_user];
     }
@@ -194,11 +213,11 @@ contract GasContract is Ownable, Constants {
         address senderOfTx = msg.sender;
         require(
             balances[senderOfTx] >= _amount,
-            "Gas Contract - Transfer function - Sender has insufficient Balance"
+            "GC7"
         );
         require(
             bytes(_name).length < 9,
-            "Gas Contract - Transfer function -  The recipient name is too long, there is a max length of 8 characters"
+            "GC8"
         );
         balances[senderOfTx] -= _amount;
         balances[_recipient] += _amount;
@@ -226,21 +245,17 @@ contract GasContract is Ownable, Constants {
         PaymentType _type
     ) public onlyAdminOrOwner {
 
-        // IDG = Gas Contract - Update Payment function - ID must be greater than 0
-        // ADG = Gas Contract - Update Payment function - Amount must be greater than 0
-        // ANZ = Gas Contract - Update Payment function - Administrator must have a valid non zero address
-
         require(
             _ID != 0,
-            "Gas Contract - Update Payment function - ID must be greater than 0"
+            "GC9"
         );
         require(
             _amount != 0,
-            "Gas Contract - Update Payment function - Amount must be greater than 0"
+            "GC10"
         );
         require(
             _user != address(0),
-            "Gas Contract - Update Payment function - Administrator must have a valid non zero address"
+            "GC11"
         );
 
         address senderOfTx = msg.sender;
@@ -269,7 +284,7 @@ contract GasContract is Ownable, Constants {
     {
         require(
             _tier < 255,
-            "Gas Contract - addToWhitelist function -  tier level should not be greater than 255"
+            "GC12"
         );
         whitelist[_userAddrs] = _tier;
         if (_tier > 3) {
@@ -303,11 +318,11 @@ contract GasContract is Ownable, Constants {
         address senderOfTx = msg.sender;
         require(
             balances[senderOfTx] >= _amount,
-            "Gas Contract - whiteTransfers function - Sender has insufficient Balance"
+            "GC13"
         );
         require(
             _amount > 3,
-            "Gas Contract - whiteTransfers function - amount to send have to be bigger than 3"
+            "GC14"
         );
         balances[senderOfTx] -= _amount;
         balances[_recipient] += _amount;
