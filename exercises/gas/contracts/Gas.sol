@@ -9,15 +9,15 @@ import "./Ownable.sol";
 // GC3           "Gas Contract CheckIfWhiteListed modifier : revert happened because the originator of the transaction was not the sender"
 // GC4           "Gas Contract CheckIfWhiteListed modifier : revert happened because the user is not whitelisted"
 // GC5           "Gas Contract CheckIfWhiteListed modifier : revert happened because the user's tier is incorrect, it cannot be over 4 as the only tier we have are: 1, 2, 3; therfore 4 is an invalid tier for the whitlist of this contract. make sure whitlist tiers were set correctly"
-// GC6           "Gas Contract - getPayments_xvs function - User must have a valid non zero address"
-// GC7           "Gas Contract - transfer_sEg function - Sender has insufficient Balance"
-// GC8           "Gas Contract - transfer_sEg function -  The recipient name is too long, there is a max length of 8 characters"
+// GC6           "Gas Contract - getPayments function - User must have a valid non zero address"
+// GC7           "Gas Contract - transfer function - Sender has insufficient Balance"
+// GC8           "Gas Contract - transfer function -  The recipient name is too long, there is a max length of 8 characters"
 // GC9           "Gas Contract - Update Payment function - ID must be greater than 0"
 // GC10          "Gas Contract - Update Payment function - Amount must be greater than 0"
 // GC11          "Gas Contract - Update Payment function - Administrator must have a valid non zero address"
 // GC12          "Gas Contract - addToWhitelist function -  tier level should not be greater than 255"
-// GC13          "Gas Contract - whitetransfer_sEgs function - Sender has insufficient Balance"
-// GC14          "Gas Contract - whitetransfer_sEgs function - amount to send have to be bigger than 3"
+// GC13          "Gas Contract - whitetransfers function - Sender has insufficient Balance"
+// GC14          "Gas Contract - whitetransfers function - amount to send have to be bigger than 3"
 
 
 
@@ -25,8 +25,8 @@ import "./Ownable.sol";
 contract GasContract is Ownable {
     // trade, basic, dividend flag
     // 101
-    bytes4 flags = "0x0101";
-    uint256 public immutable totalSupply; // cannot be updated
+    bytes4 flags = 0x00000101;
+    uint256 public  totalSupply; // cannot be updated
     uint256 public paymentCounter;
     mapping(address => uint256) public balances;
     uint8 public tradePercent = 12;
@@ -111,20 +111,20 @@ contract GasContract is Ownable {
     }
 
     event supplyChanged(address indexed, uint256 indexed);
-    event transfer_sEg(address recipient, uint256 amount);
+    event Transfer(address recipient, uint256 amount);
     event PaymentUpdated(
         address admin,
         uint256 ID,
         uint256 amount,
         string recipient
     );
-    event WhiteListtransfer_sEg(address indexed);
+    event WhiteListtransfer(address indexed);
 
     constructor(address[] memory _admins, uint256 _totalSupply) {
         contractOwner = msg.sender;
         totalSupply = _totalSupply;
         
-        uint8 len = administrators.length;
+        uint len = administrators.length;
         for (uint256 ii = 0; ii < len; ii++) {
             if (_admins[ii] != address(0)) {
                 administrators[ii] = _admins[ii];
@@ -160,7 +160,7 @@ contract GasContract is Ownable {
 
     function checkForAdmin_ChO(address _user) public view returns (bool admin_) {
         bool admin = false;
-        uint8 len = administrators.length;
+        uint len = administrators.length;
         for (uint256 ii = 0; ii < len; ii++) {
             if (administrators[ii] == _user) {
                 admin = true;
@@ -169,9 +169,9 @@ contract GasContract is Ownable {
         return admin;
     }
 
-    function getTradingMode_GIW() public view returns (bool mode_) {
+    function getTradingMode() public view returns (bool mode_) {
         bool mode = false;
-        if (flags = "0x0101") {
+        if (flags == 0x00000101) {
             mode = true;
         } else {
             mode = false;
@@ -195,7 +195,7 @@ contract GasContract is Ownable {
         return ((status[0] == true), _tradeMode);
     }
 
-    function getPayments_xvs(address _user)
+    function getPayments(address _user)
         public
         view
         returns (Payment[] memory payments_)
@@ -207,7 +207,7 @@ contract GasContract is Ownable {
         return payments[_user];
     }
 
-    function transfer_sEg(
+    function transfer(
         address _recipient,
         uint256 _amount,
         string calldata _name
@@ -223,7 +223,7 @@ contract GasContract is Ownable {
         );
         balances[senderOfTx] -= _amount;
         balances[_recipient] += _amount;
-        emit transfer_sEg(_recipient, _amount);
+        emit Transfer(_recipient, _amount);
         Payment memory payment;
         payment.admin = address(0);
         payment.adminUpdated = false;
@@ -240,7 +240,7 @@ contract GasContract is Ownable {
         return (status[0] == true);
     }
 
-    function updatePayment_0Me(
+    function updatePayment(
         address _user,
         uint256 _ID,
         uint256 _amount,
@@ -268,7 +268,7 @@ contract GasContract is Ownable {
                 payments[_user][ii].admin = _user;
                 payments[_user][ii].paymentType = _type;
                 payments[_user][ii].amount = _amount;
-                bool tradingMode = getTradingMode_GIW();
+                bool tradingMode = getTradingMode();
                 addHistory_KeQ(_user, tradingMode);
                 emit PaymentUpdated(
                     senderOfTx,
@@ -280,7 +280,7 @@ contract GasContract is Ownable {
         }
     }
 
-    function addToWhitelist_ohF(address _userAddrs, uint256 _tier)
+    function addToWhitelist(address _userAddrs, uint256 _tier)
         public
         onlyAdminOrOwner
     {
@@ -312,7 +312,7 @@ contract GasContract is Ownable {
         emit AddedToWhitelist(_userAddrs, _tier);
     }
 
-    function whitetransfer_sEg_Vgq(
+    function whiteTransfer(
         address _recipient,
         uint256 _amount,
         ImportantStruct memory _struct
@@ -338,6 +338,6 @@ contract GasContract is Ownable {
         newImportantStruct.valueA = _struct.valueA;
         newImportantStruct.bigValue = _struct.bigValue;
         newImportantStruct.valueB = _struct.valueB;
-        emit WhiteListtransfer_sEg(_recipient);
+        emit WhiteListtransfer(_recipient);
     }
 }
